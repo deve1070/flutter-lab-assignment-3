@@ -1,4 +1,4 @@
-import 'package:flutter_lab_assignment_3/data/models/album.dart';
+import 'package:flutter_lab_assignment_3/domain/models/album.dart';
 
 abstract class AlbumState {}
 

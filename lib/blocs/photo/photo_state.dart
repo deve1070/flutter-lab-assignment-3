@@ -1,4 +1,4 @@
-import 'package:flutter_lab_assignment_3/data/models/photo.dart';
+import 'package:flutter_lab_assignment_3/domain/models/photo.dart';
 
 abstract class PhotoState {}
 

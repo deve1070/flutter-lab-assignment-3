@@ -6,44 +6,73 @@ import 'package:flutter_lab_assignment_3/data/repositories/photo_repository_impl
 import 'package:flutter_lab_assignment_3/domain/repositories/album_repository.dart';
 import 'package:flutter_lab_assignment_3/domain/repositories/photo_repository.dart';
 import 'package:flutter_lab_assignment_3/domain/usecases/get_albums_usecase.dart';
+import 'package:flutter_lab_assignment_3/domain/usecases/get_album_by_id_usecase.dart';
 import 'package:flutter_lab_assignment_3/domain/usecases/get_photos_usecase.dart';
-import 'package:flutter_lab_assignment_3/presentation/bloc/album/album_cubit.dart';
-import 'package:flutter_lab_assignment_3/presentation/bloc/photo/photo_cubit.dart';
+import 'package:flutter_lab_assignment_3/domain/usecases/get_photos_by_album_id_usecase.dart';
+import 'package:flutter_lab_assignment_3/domain/usecases/get_photo_by_id_usecase.dart';
+import 'package:flutter_lab_assignment_3/blocs/album/album_bloc.dart';
+import 'package:flutter_lab_assignment_3/blocs/photo/photo_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_lab_assignment_3/data/services/api_service.dart';
 
-final sl = GetIt.instance;
+final getIt = GetIt.instance;
 
-Future<void> init() async {
-  // Bloc
-  sl.registerFactory(
-    () => AlbumCubit(getAlbumsUseCase: sl()),
+void init() {
+  // Services
+  getIt.registerLazySingleton<http.Client>(() => http.Client());
+  getIt.registerLazySingleton<ApiService>(() => ApiService(getIt()));
+
+  // Repositories
+  getIt.registerLazySingleton<AlbumRepositoryImpl>(
+    () => AlbumRepositoryImpl(getIt()),
   );
-  sl.registerFactory(
-    () => PhotoCubit(getPhotosUseCase: sl()),
+  getIt.registerLazySingleton<PhotoRepositoryImpl>(
+    () => PhotoRepositoryImpl(getIt()),
   );
 
   // Use cases
-  sl.registerLazySingleton(() => GetAlbumsUseCase(sl()));
-  sl.registerLazySingleton(() => GetPhotosUseCase(sl()));
-
-  // Repository
-  sl.registerLazySingleton<AlbumRepository>(
-    () => AlbumRepositoryImpl(remoteDataSource: sl()),
+  getIt.registerLazySingleton<GetAlbumsUseCase>(
+    () => GetAlbumsUseCase(getIt()),
   );
-  sl.registerLazySingleton<PhotoRepository>(
-    () => PhotoRepositoryImpl(remoteDataSource: sl()),
+  getIt.registerLazySingleton<GetAlbumByIdUseCase>(
+    () => GetAlbumByIdUseCase(getIt()),
+  );
+  getIt.registerLazySingleton<GetPhotosUseCase>(
+    () => GetPhotosUseCase(getIt()),
+  );
+  getIt.registerLazySingleton<GetPhotosByAlbumIdUseCase>(
+    () => GetPhotosByAlbumIdUseCase(getIt()),
+  );
+  getIt.registerLazySingleton<GetPhotoByIdUseCase>(
+    () => GetPhotoByIdUseCase(getIt()),
+  );
+
+  // BLoCs
+  getIt.registerFactory<AlbumBloc>(
+    () => AlbumBloc(
+      getAlbumsUseCase: getIt(),
+      getAlbumByIdUseCase: getIt(),
+    ),
+  );
+  getIt.registerFactory<PhotoBloc>(
+    () => PhotoBloc(
+      getPhotosUseCase: getIt(),
+      getPhotosByAlbumIdUseCase: getIt(),
+      getPhotoByIdUseCase: getIt(),
+    ),
   );
 
   // Data sources
-  sl.registerLazySingleton<AlbumRemoteDataSource>(
-    () => AlbumRemoteDataSourceImpl(httpClient: sl()),
+  getIt.registerLazySingleton<AlbumRemoteDataSource>(
+    () => AlbumRemoteDataSourceImpl(httpClient: getIt()),
   );
-  sl.registerLazySingleton<PhotoRemoteDataSource>(
-    () => PhotoRemoteDataSourceImpl(httpClient: sl()),
+  getIt.registerLazySingleton<PhotoRemoteDataSource>(
+    () => PhotoRemoteDataSourceImpl(httpClient: getIt()),
   );
 
   // External
-  sl.registerLazySingleton(() {
+  getIt.registerLazySingleton(() {
     final client = HttpClient();
     client.connectionTimeout = const Duration(seconds: 10);
     return client;

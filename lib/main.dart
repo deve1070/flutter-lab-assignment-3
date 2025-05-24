@@ -10,8 +10,8 @@ import 'package:flutter_lab_assignment_3/domain/usecases/get_album_by_id_usecase
 import 'package:flutter_lab_assignment_3/domain/usecases/get_photos_usecase.dart';
 import 'package:flutter_lab_assignment_3/domain/usecases/get_photos_by_album_id_usecase.dart';
 import 'package:flutter_lab_assignment_3/domain/usecases/get_photo_by_id_usecase.dart';
-import 'package:flutter_lab_assignment_3/presentation/bloc/album/album_cubit.dart';
-import 'package:flutter_lab_assignment_3/presentation/bloc/photo/photo_cubit.dart';
+import 'package:flutter_lab_assignment_3/blocs/album/album_bloc.dart';
+import 'package:flutter_lab_assignment_3/blocs/photo/photo_bloc.dart';
 import 'package:flutter_lab_assignment_3/presentation/widgets/error_boundary.dart';
 import 'package:flutter_lab_assignment_3/presentation/app_router.dart';
 
@@ -36,13 +36,13 @@ void main() async {
   runApp(MultiBlocProvider(
     providers: [
       BlocProvider(
-        create: (context) => AlbumCubit(
+        create: (context) => AlbumBloc(
           getAlbumsUseCase: GetAlbumsUseCase(albumRepository),
           getAlbumByIdUseCase: GetAlbumByIdUseCase(albumRepository),
         ),
       ),
       BlocProvider(
-        create: (context) => PhotoCubit(
+        create: (context) => PhotoBloc(
           getPhotosUseCase: GetPhotosUseCase(photoRepository),
           getPhotosByAlbumIdUseCase: GetPhotosByAlbumIdUseCase(photoRepository),
           getPhotoByIdUseCase: GetPhotoByIdUseCase(photoRepository),

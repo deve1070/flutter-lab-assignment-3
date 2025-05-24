@@ -1,3 +1,9 @@
 abstract class AlbumEvent {}
 
-class FetchAlbums extends AlbumEvent {} 
+class GetAlbums extends AlbumEvent {}
+
+class GetAlbumById extends AlbumEvent {
+  final int id;
+
+  GetAlbumById(this.id);
+} 

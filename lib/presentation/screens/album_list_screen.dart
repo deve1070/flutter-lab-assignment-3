@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_lab_assignment_3/blocs/album/album_bloc.dart';
+import 'package:flutter_lab_assignment_3/blocs/album/album_event.dart';
+import 'package:flutter_lab_assignment_3/blocs/album/album_state.dart';
 import 'package:flutter_lab_assignment_3/domain/models/album.dart';
-import 'package:flutter_lab_assignment_3/presentation/bloc/album/album_cubit.dart';
-import 'package:flutter_lab_assignment_3/presentation/bloc/album/album_state.dart';
 import 'package:flutter_lab_assignment_3/presentation/widgets/error_view.dart';
 
-class AlbumListScreen extends StatelessWidget {
+class AlbumListScreen extends StatefulWidget {
   const AlbumListScreen({super.key});
+
+  @override
+  State<AlbumListScreen> createState() => _AlbumListScreenState();
+}
+
+class _AlbumListScreenState extends State<AlbumListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<AlbumBloc>().add(GetAlbums());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,15 +31,14 @@ class AlbumListScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              context.read<AlbumCubit>().getAlbums();
+              context.read<AlbumBloc>().add(GetAlbums());
             },
           ),
         ],
       ),
-      body: BlocBuilder<AlbumCubit, AlbumState>(
+      body: BlocBuilder<AlbumBloc, AlbumState>(
         builder: (context, state) {
           if (state is AlbumInitial) {
-            context.read<AlbumCubit>().getAlbums();
             return const Center(child: CircularProgressIndicator());
           } else if (state is AlbumLoading) {
             return const Center(
@@ -43,7 +54,7 @@ class AlbumListScreen extends StatelessWidget {
           } else if (state is AlbumLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
-                await context.read<AlbumCubit>().getAlbums();
+                context.read<AlbumBloc>().add(GetAlbums());
               },
               child: _buildAlbumList(context, state.albums),
             );
@@ -51,7 +62,7 @@ class AlbumListScreen extends StatelessWidget {
             return ErrorView(
               message: _getErrorMessage(state.message),
               onRetry: () {
-                context.read<AlbumCubit>().getAlbums();
+                context.read<AlbumBloc>().add(GetAlbums());
               },
               icon: _getErrorIcon(state.message),
               retryText: 'Try Again',
@@ -127,7 +138,7 @@ class AlbumListScreen extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           child: InkWell(
             onTap: () {
-              context.go('/album/${album.id}', extra: album);
+              context.push('/album/${album.id}', extra: album);
             },
             child: Padding(
               padding: const EdgeInsets.all(12),

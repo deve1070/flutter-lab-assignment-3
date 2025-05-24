@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lab_assignment_3/blocs/photo/photo_bloc.dart';
+import 'package:flutter_lab_assignment_3/blocs/photo/photo_event.dart';
 import 'package:flutter_lab_assignment_3/blocs/photo/photo_state.dart';
 
-class PhotoListScreen extends StatelessWidget {
+class PhotoListScreen extends StatefulWidget {
   final int albumId;
 
   const PhotoListScreen({super.key, required this.albumId});
+
+  @override
+  State<PhotoListScreen> createState() => _PhotoListScreenState();
+}
+
+class _PhotoListScreenState extends State<PhotoListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<PhotoBloc>().add(GetPhotosByAlbumId(widget.albumId));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +30,8 @@ class PhotoListScreen extends StatelessWidget {
         builder: (context, state) {
           if (state is PhotoLoading) {
             return const Center(child: CircularProgressIndicator());
+          } else if (state is PhotoError) {
+            return Center(child: Text(state.message));
           } else if (state is PhotoLoaded) {
             return GridView.builder(
               padding: const EdgeInsets.all(8),
@@ -53,8 +67,6 @@ class PhotoListScreen extends StatelessWidget {
                 );
               },
             );
-          } else if (state is PhotoError) {
-            return Center(child: Text(state.message));
           }
           return const SizedBox();
         },

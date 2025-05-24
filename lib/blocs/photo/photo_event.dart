@@ -1,9 +1,15 @@
 abstract class PhotoEvent {}
 
-class FetchPhotos extends PhotoEvent {}
+class GetPhotos extends PhotoEvent {}
 
-class FetchPhotosByAlbumId extends PhotoEvent {
+class GetPhotosByAlbumId extends PhotoEvent {
   final int albumId;
 
-  FetchPhotosByAlbumId(this.albumId);
+  GetPhotosByAlbumId(this.albumId);
+}
+
+class GetPhotoById extends PhotoEvent {
+  final int id;
+
+  GetPhotoById(this.id);
 } 
