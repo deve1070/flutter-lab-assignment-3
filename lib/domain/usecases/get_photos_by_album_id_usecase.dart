@@ -7,6 +7,17 @@ class GetPhotosByAlbumIdUseCase {
   GetPhotosByAlbumIdUseCase(this._photoRepository);
 
   Future<List<Photo>> execute(int albumId) async {
-    return await _photoRepository.getPhotosByAlbumId(albumId);
+    if (albumId <= 0) {
+      throw Exception('Invalid album ID');
+    }
+    try {
+      final photos = await _photoRepository.getPhotosByAlbumId(albumId);
+      if (photos.isEmpty) {
+        throw Exception('No photos found for album $albumId');
+      }
+      return photos;
+    } catch (e) {
+      throw Exception('Failed to fetch photos: $e');
+    }
   }
 } 

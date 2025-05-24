@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_lab_assignment_3/domain/models/album.dart';
 import 'package:flutter_lab_assignment_3/domain/models/photo.dart';
@@ -39,11 +40,23 @@ class ApiService {
   }
 
   Future<List<Photo>> getPhotosByAlbumId(int albumId) async {
-    final response = await _client.get(Uri.parse('$baseUrl/albums/$albumId/photos'));
+    debugPrint('Fetching photos for album $albumId');
+    final response = await _client.get(Uri.parse('$baseUrl/photos?albumId=$albumId'));
+    debugPrint('Response status: ${response.statusCode}');
+    
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = json.decode(response.body);
-      return jsonList.map((json) => _mapPhotoJson(json)).toList();
+      debugPrint('Received ${jsonList.length} photos for album $albumId');
+      
+      final photos = jsonList.map((json) {
+        final photo = _mapPhotoJson(json);
+        debugPrint('Mapped photo: id=${photo.id}, albumId=${photo.albumId}, url=${photo.url}');
+        return photo;
+      }).toList();
+      
+      return photos;
     } else {
+      debugPrint('Error response: ${response.body}');
       throw Exception('Failed to load photos for album $albumId');
     }
   }
@@ -58,14 +71,14 @@ class ApiService {
   }
 
   Photo _mapPhotoJson(Map<String, dynamic> json) {
-    // Use Picsum Photos for actual images
-    final photoId = json['id'] as int;
-    return Photo(
-      id: photoId,
+    final photo = Photo(
+      id: json['id'] as int,
       albumId: json['albumId'] as int,
       title: json['title'] as String,
-      url: 'https://picsum.photos/id/${photoId + 10}/800/800',
-      thumbnailUrl: 'https://picsum.photos/id/${photoId + 10}/200/200',
+      url: 'https://picsum.photos/600/400?random=${json['id']}',
+      thumbnailUrl: 'https://picsum.photos/150/150?random=${json['id']}',
     );
+    debugPrint('Mapping photo: id=${photo.id}, albumId=${photo.albumId}, url=${photo.url}');
+    return photo;
   }
 } 

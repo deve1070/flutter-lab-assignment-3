@@ -15,7 +15,7 @@ class AlbumRepositoryImpl implements AlbumRepository {
       // Check cache first
       if (await CacheManager.isCacheValid()) {
         final cachedAlbums = CacheManager.getCachedAlbums();
-        if (cachedAlbums != null && cachedAlbums.isNotEmpty) {
+        if (cachedAlbums.isNotEmpty) {
           return cachedAlbums;
         }
       }
@@ -30,12 +30,12 @@ class AlbumRepositoryImpl implements AlbumRepository {
     } catch (e) {
       // If API call fails, try to return cached data
       final cachedAlbums = CacheManager.getCachedAlbums();
-      if (cachedAlbums != null && cachedAlbums.isNotEmpty) {
+      if (cachedAlbums.isNotEmpty) {
         return cachedAlbums;
       }
       
       // If no cached data, throw the error
-      throw await ErrorHandler.handleError(e);
+      throw ErrorHandler.handleError(e);
     }
   }
 } 

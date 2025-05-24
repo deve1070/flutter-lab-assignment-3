@@ -5,9 +5,8 @@ import 'package:flutter_lab_assignment_3/domain/models/album.dart';
 import 'package:flutter_lab_assignment_3/domain/models/photo.dart';
 import 'package:flutter_lab_assignment_3/presentation/bloc/photo/photo_cubit.dart';
 import 'package:flutter_lab_assignment_3/presentation/bloc/photo/photo_state.dart';
-import 'package:flutter_lab_assignment_3/presentation/widgets/error_view.dart';
 
-class AlbumDetailScreen extends StatelessWidget {
+class AlbumDetailScreen extends StatefulWidget {
   final int albumId;
   final Album? album;
 
@@ -18,12 +17,33 @@ class AlbumDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<AlbumDetailScreen> createState() => _AlbumDetailScreenState();
+}
+
+class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load photos when the screen is first created
+    context.read<PhotoCubit>().getPhotosByAlbumId(widget.albumId);
+  }
+
+  @override
+  void didUpdateWidget(AlbumDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload photos when the album ID changes
+    if (oldWidget.albumId != widget.albumId) {
+      context.read<PhotoCubit>().getPhotosByAlbumId(widget.albumId);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('Album ${albumId}'),
+        title: Text('Album ${widget.albumId}'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -33,7 +53,7 @@ class AlbumDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              context.read<PhotoCubit>().getPhotosByAlbumId(albumId);
+              context.read<PhotoCubit>().getPhotosByAlbumId(widget.albumId);
             },
           ),
         ],
@@ -41,7 +61,6 @@ class AlbumDetailScreen extends StatelessWidget {
       body: BlocBuilder<PhotoCubit, PhotoState>(
         builder: (context, state) {
           if (state is PhotoInitial) {
-            context.read<PhotoCubit>().getPhotosByAlbumId(albumId);
             return Center(
               child: CircularProgressIndicator(
                 color: colorScheme.primary,
@@ -54,9 +73,35 @@ class AlbumDetailScreen extends StatelessWidget {
               ),
             );
           } else if (state is PhotoLoaded) {
+            if (state.photos.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.photo_library_outlined,
+                      size: 64,
+                      color: colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No photos found in this album',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pull down to refresh',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              );
+            }
             return RefreshIndicator(
               onRefresh: () async {
-                await context.read<PhotoCubit>().getPhotosByAlbumId(albumId);
+                await context.read<PhotoCubit>().getPhotosByAlbumId(widget.albumId);
               },
               child: _buildAlbumDetails(context, state.photos),
             );
@@ -77,11 +122,12 @@ class AlbumDetailScreen extends StatelessWidget {
                       color: colorScheme.error,
                       fontSize: 16,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.read<PhotoCubit>().getPhotosByAlbumId(albumId);
+                      context.read<PhotoCubit>().getPhotosByAlbumId(widget.albumId);
                     },
                     icon: const Icon(Icons.refresh),
                     label: const Text('Retry'),
@@ -124,7 +170,17 @@ class AlbumDetailScreen extends StatelessWidget {
       );
     }
 
-    final photo = photos.first;
+    // Get a photo that matches this album ID
+    final photo = photos.firstWhere(
+      (p) => p.albumId == widget.albumId,
+      orElse: () {
+        debugPrint('No matching photo found for album ${widget.albumId}, using first photo');
+        return photos.first;
+      },
+    );
+    
+    debugPrint('Building album details with photo: id=${photo.id}, albumId=${photo.albumId}, url=${photo.url}');
+    
     final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
@@ -132,12 +188,12 @@ class AlbumDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Hero(
-            tag: 'album_${albumId}',
+            tag: 'album_${widget.albumId}',
             child: Container(
               height: 400,
-              color: colorScheme.surfaceVariant,
+              color: colorScheme.surfaceContainerHighest,
               child: Image.network(
-                'https://picsum.photos/800/600?random=${photo.id}',
+                photo.url,
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
@@ -153,6 +209,7 @@ class AlbumDetailScreen extends StatelessWidget {
                 },
                 errorBuilder: (context, error, stackTrace) {
                   debugPrint('Error loading image: $error');
+                  debugPrint('Failed URL: ${photo.url}');
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -170,6 +227,14 @@ class AlbumDetailScreen extends StatelessWidget {
                             fontSize: 16,
                           ),
                         ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            context.read<PhotoCubit>().getPhotosByAlbumId(widget.albumId);
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry'),
+                        ),
                       ],
                     ),
                   );
@@ -183,7 +248,7 @@ class AlbumDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  album?.title ?? 'Album $albumId',
+                  widget.album?.title ?? 'Album ${widget.albumId}',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: colorScheme.primary,
@@ -191,7 +256,7 @@ class AlbumDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Album ID: $albumId',
+                  'Album ID: ${widget.albumId}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

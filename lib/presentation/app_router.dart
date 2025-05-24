@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_lab_assignment_3/domain/models/album.dart';
 import 'package:flutter_lab_assignment_3/presentation/screens/album_list_screen.dart';

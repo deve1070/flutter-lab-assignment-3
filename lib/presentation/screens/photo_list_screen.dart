@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lab_assignment_3/blocs/photo/photo_bloc.dart';
-import 'package:flutter_lab_assignment_3/blocs/photo/photo_event.dart';
 import 'package:flutter_lab_assignment_3/blocs/photo/photo_state.dart';
 
 class PhotoListScreen extends StatelessWidget {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_lab_assignment_3/config/router.dart';
 import 'package:flutter_lab_assignment_3/data/services/api_service.dart';
 import 'package:flutter_lab_assignment_3/domain/repositories/album_repository_impl.dart';
 import 'package:flutter_lab_assignment_3/domain/repositories/photo_repository_impl.dart';
@@ -13,8 +12,6 @@ import 'package:flutter_lab_assignment_3/domain/usecases/get_photos_by_album_id_
 import 'package:flutter_lab_assignment_3/domain/usecases/get_photo_by_id_usecase.dart';
 import 'package:flutter_lab_assignment_3/presentation/bloc/album/album_cubit.dart';
 import 'package:flutter_lab_assignment_3/presentation/bloc/photo/photo_cubit.dart';
-import 'package:flutter_lab_assignment_3/data/cache/cache_manager.dart';
-import 'package:flutter_lab_assignment_3/core/error/error_handler.dart';
 import 'package:flutter_lab_assignment_3/presentation/widgets/error_boundary.dart';
 import 'package:flutter_lab_assignment_3/presentation/app_router.dart';
 
